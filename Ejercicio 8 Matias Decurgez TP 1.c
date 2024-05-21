@@ -1,10 +1,10 @@
-/*8. Realizar un programa en el cual el usuario primero ingrese una oraci髇
-la cual puede estar en may鷖cula o min鷖cula o de manera alternada
+/*8. Realizar un programa en el cual el usuario primero ingrese una oraci贸n
+la cual puede estar en may煤scula o min煤scula o de manera alternada
 y luego pueda seleccionar que realice las siguientes acciones
-a) Mostrar la oraci髇 toda en may鷖cula
-b) Mostrar la oraci髇 todo en min鷖culas
-c) Mostrar la oraci髇 alternando una may鷖cula y una min鷖cula
-D) Mostrar la oraci髇 comenzando todas las palabras con may鷖cula*/
+a) Mostrar la oraci贸n toda en may煤scula
+b) Mostrar la oraci贸n todo en min煤sculas
+c) Mostrar la oraci贸n alternando una may煤scula y una min煤scula
+D) Mostrar la oraci贸n comenzando todas las palabras con may煤scula*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
