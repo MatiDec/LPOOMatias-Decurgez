@@ -1,4 +1,4 @@
-/*2.	Realiza un programa que cuente cu·ntas vocales tiene una cadena de caracteres ingresada por el usuario.*/
+/*2.	Realiza un programa que cuente cu√°ntas vocales tiene una cadena de caracteres ingresada por el usuario.*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
