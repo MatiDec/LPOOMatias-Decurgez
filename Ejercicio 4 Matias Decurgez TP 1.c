@@ -1,4 +1,4 @@
-/*4.	Realiza un programa que reemplace todas las apariciones de un car·cter en una cadena de caracteres ingresada por el usuario por otro car·cter tambiÈn ingresado por el usuario.*/
+/*4.	Realiza un programa que reemplace todas las apariciones de un car√°cter en una cadena de caracteres ingresada por el usuario por otro car√°cter tambi√©n ingresado por el usuario.*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
