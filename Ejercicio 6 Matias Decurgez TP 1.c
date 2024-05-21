@@ -1,4 +1,4 @@
-/*6.	Realiza un programa que determine si una cadena de caracteres ingresada por el usuario es un anagrama de otra cadena también ingresada por el usuario. 
+/*6.	Realiza un programa que determine si una cadena de caracteres ingresada por el usuario es un anagrama de otra cadena tambiÃ©n ingresada por el usuario. 
 Un anagrama es una palabra o frase formada por las mismas letras de otra palabra o frase, pero en un orden diferente, como por ejemplo "roma" y "amor".*/
 #include <stdio.h>
 #include <stdlib.h>
