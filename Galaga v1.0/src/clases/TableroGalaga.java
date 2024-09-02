@@ -3,6 +3,7 @@ package clases;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.TexturePaint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,11 +16,15 @@ import java.util.List;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.Timer;
 
-
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
 import javax.swing.JLabel;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -33,36 +38,33 @@ public class TableroGalaga extends JPanel implements KeyListener {
     private Jugador jugador = new Jugador(640, 600);
     private Timer timerEnemigos;
     private Timer timerKamikaze;
-    private Timer timerGaster;
     private Boss boss;
     private BufferedImage texturaBoss;
+
     
     private Enemigos[] enemigos;
     private int cantToques = 0;
     private boolean direccionderecha = true;
-    private int nivel = 5; // para hardcodear
+    private int nivel = 1; // para hardcodear
     private int enemigosRestantes;
     private int cantBajadas = 1;
     private int vidaBoss;
-    private int vidas= 3;
-    public boolean gasterDisparando = false;
-    public boolean isPreDisparo = false;
     
     private BufferedImage texturaJugador;  // Textura para el jugador
     private BufferedImage texturaEnemigos; // Textura para los enemigos
-    private BufferedImage texturaProyectil; // Textura para los proyectiles
-    private BufferedImage texturaEnemigosDisparo; // Textura para los enemigos que están disparando
-    private BufferedImage texturaEnemigosPreDisparo;
+    private BufferedImage texturaEnemigos2; // Textura para los enemigos
+    private BufferedImage texturaEnemigos3;
+    private BufferedImage preDisparo;
+    private BufferedImage postDisparo;// Textura para los enemigos
+    private BufferedImage texturaProyectil; // Textura para los enemigos
+
     private List<Rectangle2D> disparosEnemigos = new ArrayList<>(); 
     private List<Rectangle2D> kamikazeEnemigos = new ArrayList<>();
     private List<Rectangle2D> gasterEnemigos = new ArrayList<>();
     private List<Enemigos> enemigosDisparando = new ArrayList<>();
-    private List<Enemigos> enemigosPreDisparo = new ArrayList<>();
-
+    
     private BufferedImage[] framesFondo;
     private int currentFrame = 0;
-    
-    Sonido sonido = new Sonido();
     
     JPanel pantallaCarga = new JPanel();
     JPanel gameOver = new JPanel();
@@ -71,7 +73,6 @@ public class TableroGalaga extends JPanel implements KeyListener {
     JLabel progreso = new JLabel("");
     JLabel textoGameOver = new JLabel("");
     JLabel textoYouWin = new JLabel("");
-    JLabel textoVidas = new JLabel("Vidas: 3");
     JButton seguirJugando = new JButton("Seguir");
     JButton noSeguir = new JButton("No seguir");
     JButton seguirJugandoWin = new JButton("Seguir");
@@ -80,34 +81,10 @@ public class TableroGalaga extends JPanel implements KeyListener {
     private JProgressBar barraProgreso = new JProgressBar(0, 100);  // Nueva barra de progreso
     
     public TableroGalaga(Ventana ventana) {
-    	//Carga de sonidos
-    	
-    	sonido.loadAudio("fondo", "/sound/fondo.wav");
-    	sonido.loadAudio("disparo", "/sound/disparo.wav");
-    	sonido.loadAudio("eliminarenemigo", "/sound/eliminarenemigo.wav");
-    	sonido.loadAudio("gaster", "/sound/gaster.wav");
-    	sonido.loadAudio("nivelcompleto", "/sound/nivelcompleto.wav");
-    	sonido.loadAudio("perdido", "/sound/perdido.wav");
-    	sonido.loadAudio("win", "/sound/win.wav");
-    	
-    	//Regular volumen de sonidos
-    	
-    	sonido.setVolume("fondo", -20.0f);
-    	sonido.setVolume("disparo", -20.0f);
-    	sonido.setVolume("eliminarenemigo", -20.0f);
-    	sonido.setVolume("gaster", -20.0f);
-    	sonido.setVolume("nivelcompleto", -20.0f);
-    	sonido.setVolume("perdido", -20.0f);
-    	sonido.setVolume("win", -20.0f);
-    	
         setBackground(Color.BLACK);
         setLayout(null);
         addKeyListener(this);
         setFocusable(true);
-        
-        textoVidas.setForeground(new Color(255, 255, 255));   
-        textoVidas.setBounds(610,0,100,40);
-        add(textoVidas);
         
         gameOver.setBackground(new Color(0, 0, 0));
         gameOver.setBounds(0, 0, 1280, 720);
@@ -216,56 +193,32 @@ public class TableroGalaga extends JPanel implements KeyListener {
         iniciarNivel();
         timer = new Timer(10, e -> actualizar());
         timer.start();
-        sonido.playAudio("fondo");
+        reproducirAudio("/sound/fondo.wav");
     }
     
     // para fixear el consumo de memoria a lo loco
     private void cargarTexturas() {
         try {
-        	texturaBoss = ImageIO.read(getClass().getResource("/images/boss.png"));
             texturaJugador = ImageIO.read(getClass().getResource("/images/jugador.png"));
-            getNivel();
-            if(nivel == 1)
-            {
-            	texturaEnemigos = ImageIO.read(getClass().getResource("/images/enemigosL1.png"));
-                Enemigos.aplicarTexturaEnemigos(texturaEnemigos);
-            }
+            texturaEnemigos = ImageIO.read(getClass().getResource("/images/enemigosL1.png"));
+            texturaEnemigos2 = ImageIO.read(getClass().getResource("/images/enemigosL2.png"));
+            texturaEnemigos3 = ImageIO.read(getClass().getResource("/images/enemigosL3.png"));
+            preDisparo = ImageIO.read(getClass().getResource("/images/preDisparo.png"));
+            postDisparo = ImageIO.read(getClass().getResource("/images/postDisparo.png"));
             if(nivel == 2)
             {
-            	texturaEnemigos = ImageIO.read(getClass().getResource("/images/enemigosL2.png"));
-                Enemigos.aplicarTexturaEnemigos(texturaEnemigos);  	
+            Enemigos.aplicarTexturaEnemigos(texturaEnemigos2);  
             }
-            if(nivel == 3)
+            else if (nivel == 3)
             {
-            	texturaEnemigos = ImageIO.read(getClass().getResource("/images/enemigosL3.png"));
-                Enemigos.aplicarTexturaEnemigos(texturaEnemigos);  
+                Enemigos.aplicarTexturaEnemigos(texturaEnemigos3);  
             }
-            if(nivel == 4)
-            {
-            	texturaEnemigos = ImageIO.read(getClass().getResource("/images/enemigosL1.png"));
-                Enemigos.aplicarTexturaEnemigos(texturaEnemigos);
-            }
-            if(nivel == 5)
-            {
-            	texturaEnemigos = ImageIO.read(getClass().getResource("/images/enemigosL1.png"));
-                Enemigos.aplicarTexturaEnemigos(texturaEnemigos);
-            }
-            if(gasterDisparando == true)
-            {
-            	texturaEnemigosDisparo = ImageIO.read(getClass().getResource("/images/postDisparo.png"));
-                Enemigos.aplicarTexturaEnemigosIndex(texturaEnemigosDisparo);
-            }
-            if(gasterDisparando == false)
-            {
-            	texturaEnemigosDisparo = ImageIO.read(getClass().getResource("/images/enemigosL1.png"));
-                Enemigos.aplicarTexturaEnemigosIndex(texturaEnemigosDisparo);
-            }
-            if(isPreDisparo == true)
-            {
-            	texturaEnemigosPreDisparo = ImageIO.read(getClass().getResource("/images/preDisparo.png"));
-            	Enemigos.aplicarTexturaEnemigosIndex(texturaEnemigosPreDisparo);
+            else
+            {	 
+            Enemigos.aplicarTexturaEnemigos(texturaEnemigos);       
             }
             texturaProyectil = ImageIO.read(getClass().getResource("/images/proyectil.png"));
+            texturaBoss = ImageIO.read(getClass().getResource("/images/boss.png"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -285,30 +238,26 @@ public class TableroGalaga extends JPanel implements KeyListener {
     }
     
     private void iniciarNivel() {
-    	cargarTexturas();//recarga texturas para poner un enemigo distinto cada nivel
-    	enemigosDisparando.removeAll(enemigosDisparando);
         int filas = 4;
-        if (nivel <=3)
-        {
-        	filas = filas + nivel - 1;
-        }
-        else
-        {
-        	filas = 6;
+        if (nivel <= 3) {
+            filas = filas + nivel - 1;
+        } else {
+            filas = 6;
         }
         int columnas = 15;
         int cantidadEnemigos = filas * columnas;
         enemigos = new Enemigos[cantidadEnemigos];
-        enemigosRestantes = cantidadEnemigos;
-        double velocidadEnemigos = 0;
-        
-        if(nivel <=2)
-        {
-        velocidadEnemigos = 2 + nivel * 2;
+        if (nivel == 5) {
+            enemigosRestantes = cantidadEnemigos + 1;
+        } else {
+            enemigosRestantes = cantidadEnemigos;
         }
-        else
-        {
-        	velocidadEnemigos = 1 + 3 * 2;
+        double velocidadEnemigos = 0;
+
+        if (nivel <= 2) {
+            velocidadEnemigos = 2 + nivel * 2;
+        } else {
+            velocidadEnemigos = 1 + 3 * 2;
         }
         for (int x = 0; x < enemigos.length; x++) {
             int fila = x / columnas;
@@ -316,40 +265,46 @@ public class TableroGalaga extends JPanel implements KeyListener {
             enemigos[x] = new Enemigos(50 + columna * 50, 50 + fila * 50, velocidadEnemigos);
         }
         jugador.InicializarDisparos();
-        
+
+        // Detener todos los temporizadores antes de inicializarlos para evitar problemas.
+        if (timerEnemigos != null) {
+            timerEnemigos.stop();
+            
+        }
+        if(nivel == 2)
+        {
+        	Enemigos.aplicarTexturaEnemigos(texturaEnemigos2);  
+        }
+        else if (nivel == 3)
+        {
+        	Enemigos.aplicarTexturaEnemigos(texturaEnemigos3);  
+        }
+        else
+        {
+        	Enemigos.aplicarTexturaEnemigos(texturaEnemigos);  
+        }
         if (nivel >= 2) {
             if (timerEnemigos == null) {
-                timerEnemigos = new Timer(3000, e -> dispararEnemigos());
+                timerEnemigos = new Timer(3000, e -> {
+                	
+                    dispararEnemigos();
+                    if(nivel >=3)
+                    {
+                    	kamikazeEnemigos();
+                    	if(nivel >=4)
+                    	{
+                    		gasterEnemigos();
+                    	}
+                    }
+                });
             }
             timerEnemigos.start();
-            if (nivel >= 3)
-            {
-            	if (timerKamikaze == null) {
-                    timerKamikaze = new Timer(3000, e -> kamikazeEnemigos());
-                }
-            	timerKamikaze.start();
-            	if (nivel >= 4)
-            	{
-            		if (timerGaster == null)
-            		{
-            			timerGaster = new Timer(3000, e -> gasterEnemigos());
-            		}
-            		timerGaster.start();
-            	}
-            	
-            }
-        } 
-        
-        else {
-           
-            if (timerEnemigos != null) {
-                timerEnemigos.stop();
-            }
-            if (timerKamikaze != null) {
-                timerKamikaze.stop();
-            }
+            
         }
+
     }
+
+
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -359,7 +314,7 @@ public class TableroGalaga extends JPanel implements KeyListener {
         Graphics2D g5 = (Graphics2D) g; // proyectiles
         Graphics2D g6 = (Graphics2D) g; // fondo
         Graphics2D g7 = (Graphics2D) g; // kamikazes
-        Graphics2D g8 = (Graphics2D) g; //gaster
+        Graphics2D g8 = (Graphics2D) g; // gaster
         Graphics2D g9 = (Graphics2D) g; // boss
      // Dibujar el fondo con la secuencia de imágenes
         if (framesFondo != null && framesFondo.length > 0) {
@@ -386,14 +341,7 @@ public class TableroGalaga extends JPanel implements KeyListener {
         for (Enemigos enemigo : enemigos) {
             enemigo.dibujar(g4);
         }
-
-        for(Enemigos enemigo : enemigosPreDisparo) {
-        	enemigo.dibujarIndex(g4);
-        }
         
-        for(Enemigos enemigo : enemigosDisparando) {
-        	enemigo.dibujarIndex(g4);
-        }
     
         g5.setColor(Color.RED); 
         for (Rectangle2D disparo : disparosEnemigos) {
@@ -401,15 +349,31 @@ public class TableroGalaga extends JPanel implements KeyListener {
         }
         
         for (Rectangle2D kamikaze : kamikazeEnemigos) {
-        	TexturePaint paintDisparo = new TexturePaint(texturaEnemigos, kamikaze);
+        	
+        	if(nivel == 2)
+        	{
+        	TexturePaint paintDisparo = new TexturePaint(texturaEnemigos2, kamikaze);
         	g5.setPaint(paintDisparo);
             g7.fill(kamikaze);
+        	}
+        	else if(nivel == 3)
+        	{
+        	TexturePaint paintDisparo = new TexturePaint(texturaEnemigos3, kamikaze);
+        	g5.setPaint(paintDisparo);
+            g7.fill(kamikaze);
+        	}
+        	else
+        	{
+        		TexturePaint paintDisparo = new TexturePaint(texturaEnemigos, kamikaze);
+            	g5.setPaint(paintDisparo);
+                g7.fill(kamikaze);
+        	}
+		
         }
         g8.setColor(Color.RED); 
         for (Rectangle2D gaster : gasterEnemigos) {
             g8.fill(gaster);
         }
-        
         if (nivel == 5 && boss != null && boss.esVisible()) {
             boss.dibujar(g9);
         }
@@ -419,7 +383,7 @@ public class TableroGalaga extends JPanel implements KeyListener {
         currentFrame = (currentFrame + 1) % framesFondo.length;
 
         boolean cambiodireccion = false;
-
+        
         for (Enemigos enemigo : enemigos) {
             if (enemigo.esVisible()) {
                 if (direccionderecha && enemigo.getX() + enemigo.getWidth() >= getWidth()) {
@@ -438,9 +402,9 @@ public class TableroGalaga extends JPanel implements KeyListener {
 
             if (cantToques >= 3) {
                 for (Enemigos enemigo : enemigos) {
-                    enemigo.bajarFila();
+                   enemigo.bajarFila();
                 }
-                if (timerGaster != null) {
+                if (!gasterEnemigos.isEmpty()) {
                     for (Rectangle2D gaster : gasterEnemigos) {
                         gaster.setFrame(gaster.getX(), gaster.getY() + 32, gaster.getWidth(), gaster.getHeight());
                     }
@@ -467,8 +431,7 @@ public class TableroGalaga extends JPanel implements KeyListener {
                 enemigo.mover(direccionderecha);
 
                 if (enemigo.getY() + enemigo.getWidth() >= jugador.getY() && enemigo.esVisible()) {
-                	sonido.stopAudio("fondo");
-                    sonido.playAudio("perdido");
+                    reproducirAudio("/sound/perdido.wav");
                     Perdio();
                     return;
                 }
@@ -487,7 +450,7 @@ public class TableroGalaga extends JPanel implements KeyListener {
                 for (Enemigos enemigo : enemigos) {
                     if (enemigo.esVisible() && jugador.disparos[i].intersects(enemigo.getEnemigo()) && enemigosDisparando.contains(enemigo) == false) {
                         enemigo.Visibilizar(false);
-                        sonido.playAudioReiterado("eliminarenemigo");
+                        reproducirAudio("/sound/eliminarenemigo.wav");
                         enemigosRestantes--;
                         eliminarBala(i);
                         break;
@@ -502,7 +465,7 @@ public class TableroGalaga extends JPanel implements KeyListener {
         {
         for (int i = 0; i < jugador.disparadas; i++) {
             if (boss.getBoss().intersects(jugador.disparos[i])) {
-            	sonido.playAudioReiterado("eliminarenemigo");
+                reproducirAudio("/sound/eliminarenemigo.wav");
                 vidaBoss--;
                 eliminarBala(i);
                 if (vidaBoss <= 0) {
@@ -527,61 +490,16 @@ public class TableroGalaga extends JPanel implements KeyListener {
 
         for (Rectangle2D disparo : disparosEnemigos) {
             if (disparo.intersects(jugador.getBounds())) {
-                switch(vidas)
-                {
-                	case 3:
-                		vidas--;
-                		textoVidas.setText("Vidas: " + vidas);
-                		objetosAEliminar.add(disparo);
-                		disparosEnemigos.removeAll(objetosAEliminar);
-                		break;
-                	case 2:
-                		vidas--;
-                		textoVidas.setText("Vidas: " + vidas);
-                		objetosAEliminar.add(disparo);
-                		disparosEnemigos.removeAll(objetosAEliminar);
-                		break;
-                	case 1:
-                		vidas--;
-                		textoVidas.setText("Vidas: " + vidas);
-                		objetosAEliminar.add(disparo);
-                		disparosEnemigos.removeAll(objetosAEliminar);
-                		break;
-                	case 0:
-                    	sonido.stopAudio("fondo");
-                		sonido.playAudio("perdido");
-                		Perdio();
-                		break;
-                }
+                reproducirAudio("/sound/perdido.wav");
+                Perdio();
                 return;
             }
         }
 
         for (Rectangle2D kamikaze : kamikazeEnemigos) {
             if (kamikaze.intersects(jugador.getBounds())) {
-                switch(vidas)
-                {
-                	case 3:
-                		vidas--;
-                		textoVidas.setText("Vidas: " + vidas);
-                		kamikazeEnemigos.remove(kamikaze);
-                		break;
-                	case 2:
-                		vidas--;
-                		textoVidas.setText("Vidas: " + vidas);
-                		kamikazeEnemigos.remove(kamikaze);
-                		break;
-                	case 1:
-                		vidas--;
-                		textoVidas.setText("Vidas: " + vidas);
-                		kamikazeEnemigos.remove(kamikaze);
-                		break;
-                	case 0:
-                    	sonido.stopAudio("fondo");
-                		sonido.playAudio("perdido");
-                		Perdio();
-                		break;
-                }
+                reproducirAudio("/sound/perdido.wav");
+                Perdio();
                 return;
             }
         }
@@ -589,29 +507,8 @@ public class TableroGalaga extends JPanel implements KeyListener {
         // Nueva sección: Colisión del jugador con gaster
         for (Rectangle2D gaster : gasterEnemigos) {
             if (gaster.intersects(jugador.getBounds())) {
-                switch(vidas)
-                {
-                	case 3:
-                		gasterEnemigos.remove(gaster);
-                		vidas--;
-                		textoVidas.setText("Vidas: " + vidas);
-                		break;
-                	case 2:
-                		gasterEnemigos.remove(gaster);
-                		vidas--;
-                		textoVidas.setText("Vidas: " + vidas);
-                		break;
-                	case 1:
-                		gasterEnemigos.remove(gaster);
-                		vidas--;
-                		textoVidas.setText("Vidas: " + vidas);
-                		break;
-                	case 0:
-                    	sonido.stopAudio("fondo");
-                		sonido.playAudio("perdido");
-                		Perdio();
-                		break;
-                }
+                reproducirAudio("/sound/perdido.wav");
+                Perdio();
                 return;
             }
         }
@@ -619,7 +516,7 @@ public class TableroGalaga extends JPanel implements KeyListener {
         for (int i = 0; i < jugador.disparadas; i++) {
             for (Rectangle2D kamikaze : kamikazeEnemigos) {
                 if (kamikaze.intersects(jugador.disparos[i])) {
-                	sonido.playAudioReiterado("eliminarenemigo");
+                    reproducirAudio("/sound/eliminarenemigo.wav");
                     enemigosRestantes--;
                     kamikazeEnemigos.remove(kamikaze);
                     eliminarBala(i);
@@ -671,35 +568,48 @@ public class TableroGalaga extends JPanel implements KeyListener {
 
                 //JOptionPane.showMessageDialog(this, "Nivel " + nivel + " superado.", "Avanzar de nivel", JOptionPane.INFORMATION_MESSAGE);
             } 
+            
             else {
-            	sonido.playAudio("win");
                 Ganaste();
             }
-            
         }
-    	else if (nivel == 5 && enemigosRestantes == 1 && boss == null)
-        {
-        	bossEnemigos();
-        }
+    	  else if (nivel == 5 && enemigosRestantes == 1 && boss == null)
+          {
+          	bossEnemigos();
+          }
+
+    
     }
 
     private void reiniciarJuego() {
-    	sonido.stopAudio("perdio");
-    	sonido.stopAudio("win");
-    	sonido.playAudioReiterado("fondo");
-    	kamikazeEnemigos.removeAll(kamikazeEnemigos);
-    	disparosEnemigos.removeAll(disparosEnemigos);
-    	gasterEnemigos.removeAll(gasterEnemigos);
-    	nivel = 1;
-    	vidas = 3;
-    	// Reiniciar el boss
+        // Limpiar listas de disparos y enemigos
+        kamikazeEnemigos.clear();
+        disparosEnemigos.clear();
+        gasterEnemigos.clear();
+
+        // Reiniciar nivel y enemigos
+        nivel = 1;
+        enemigosRestantes = 0;
+        cantToques = 0;
+        cantBajadas = 1;
+
+        // Reiniciar el boss
         boss = null;
         vidaBoss = 0;
-    	textoVidas.setText("Vidas: " + vidas);
+
+        // Inicializar nivel
         iniciarNivel();
-        timer.start();
-        gameOver.setVisible(false); // Ocultar el panel de Game Over
-	}
+
+        // Reiniciar el temporizador
+        if (timer != null) {
+            timer.restart();
+        }
+
+        // Ocultar paneles de fin de juego
+        gameOver.setVisible(false);
+        youWin.setVisible(false);
+    }
+
     
     private void Perdio() {
         timer.stop();
@@ -728,53 +638,65 @@ public class TableroGalaga extends JPanel implements KeyListener {
             }
         }
     }
-    
+
+
+
     private void gasterEnemigos() {
-        Random rand = new Random();
+        enemigosDisparando.clear(); // Limpiar la lista antes de agregar nuevos disparos
+        List<Enemigos> enemigosUltimaFila = new ArrayList<>();
+        int columnas = 15; // Número de columnas de enemigos
 
-        for (int i = 0; i < enemigos.length; i++) {
-            // Probabilidad Gasterblaster
-            if (enemigos[i].esVisible() && rand.nextDouble() < 0.08 && i > 74) {
-                final int index = i;
-                try {
-                	enemigosPreDisparo.add(enemigos[index]);
-                    isPreDisparo = true;
-                    cargarTexturas();
-                    repaint();
-                } catch (Exception e) {
-                    e.printStackTrace();
+        // Obtener la última fila de enemigos visibles
+        for (int i = enemigos.length - 1; i >= 0; i--) {
+            if (i >= enemigos.length - columnas) { // Considerar solo la última fila
+                if (enemigos[i].esVisible()) {
+                    enemigosUltimaFila.add(enemigos[i]);
                 }
-                Timer timerAgregarEnemigo = new Timer(2000, e -> {
-                	sonido.playAudioReiterado("gaster");
-                	enemigosPreDisparo.removeAll(enemigosPreDisparo);
-                    enemigosDisparando.add(enemigos[index]);
-                    gasterDisparando = true;
-                    isPreDisparo = false;
-                    cargarTexturas();
-                    repaint();
-                    
-                    // Lógica para crear y eliminar el gaster
-                    Rectangle2D gaster = new Rectangle2D.Double(enemigos[index].getX() + enemigos[index].getWidth() / 2 - 2, 
-                                                               enemigos[index].getY() + enemigos[index].getHeight(), 4, 1238);
-                    gasterEnemigos.add(gaster);
+            } 
+        }
 
-                    Timer eliminarGaster = new Timer(1500, ev -> {
-                        if (gasterEnemigos.contains(gaster)) {
-                            gasterEnemigos.remove(gaster);
-                            gasterDisparando = false;
-                            cargarTexturas();
-                            repaint();
-                            enemigosDisparando.remove(enemigos[index]);
-                        }
-                    });
-                    eliminarGaster.setRepeats(false);
-                    eliminarGaster.start();
+        // Seleccionar enemigos al azar de la última fila para disparar
+        if (!enemigosUltimaFila.isEmpty()) {
+            Random rand = new Random();
+            int numDisparos = Math.min(1, enemigosUltimaFila.size()); // Número máximo de disparos
+            for (int i = 0; i < numDisparos; i++) {
+                Enemigos enemigo = enemigosUltimaFila.get(rand.nextInt(enemigosUltimaFila.size()));
+
+                // Aplicar textura de predisparo
+                enemigo.aplicarTexturaIndividual(preDisparo); 
+                
+                // Agregar el enemigo a la lista de disparos
+                enemigosDisparando.add(enemigo);
+
+                // Timer para cambiar la textura a postDisparo después de 300 milisegundos
+                Timer cambiarTextura = new Timer(700, e -> {
+                    if (enemigosDisparando.contains(enemigo)) {
+                        enemigo.aplicarTexturaIndividual(postDisparo); // Aplicar textura de postdisparo
+                        
+                        // Crear y agregar el disparo a la lista
+                        Rectangle2D gaster = new Rectangle2D.Double(enemigo.getX() + enemigo.getWidth() / 2 - 2, enemigo.getY() + enemigo.getHeight(), 4, 1238);
+                        gasterEnemigos.add(gaster);
+
+                        // Timer para eliminar el disparo y restaurar la textura después de 1500 milisegundos
+                        Timer eliminarGaster = new Timer(1500, e1 -> {
+                            if (gasterEnemigos.contains(gaster)) {
+                                gasterEnemigos.remove(gaster); 
+                                enemigo.aplicarTexturaIndividual(texturaEnemigos); // Restaurar la textura compartida
+                                repaint(); // Refrescar la pantalla después de eliminar el disparo y restaurar la textura
+                            }
+                        });
+                        eliminarGaster.setRepeats(false);
+                        eliminarGaster.start(); 
+                    }
                 });
-                timerAgregarEnemigo.setRepeats(false);
-                timerAgregarEnemigo.start();
+                cambiarTextura.setRepeats(false);
+                cambiarTextura.start(); 
             }
         }
     }
+
+
+
 
     
     private void kamikazeEnemigos() {
@@ -833,7 +755,7 @@ public class TableroGalaga extends JPanel implements KeyListener {
         }
         if (tecla == KeyEvent.VK_SPACE || tecla == KeyEvent.VK_W || tecla == KeyEvent.VK_UP) {
             if (jugador.disparadas < 20 && jugador.puedeDisparar()) {
-            	sonido.playAudioReiterado("disparo");
+                reproducirAudio("/sound/disparo.wav");
                 jugador.xDisparos[jugador.disparadas] = (int) (jugador.getX() + jugador.getWidth() / 2 + 2);
                 jugador.yDisparos[jugador.disparadas] = (int) jugador.getY();
                 jugador.disparos[jugador.disparadas] = new Rectangle2D.Double(jugador.xDisparos[jugador.disparadas], jugador.yDisparos[jugador.disparadas], 5, 10);
@@ -842,6 +764,23 @@ public class TableroGalaga extends JPanel implements KeyListener {
         }
     }
 
+    private void reproducirAudio(String nombreArchivo) {
+        try {
+        	// CARGA EL AUDIO
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(getClass().getResource(nombreArchivo));
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioInputStream);
+            clip.start();
+
+			FloatControl control = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+        	control.setValue(-20f);
+        } 
+		catch (Exception e)
+		{
+			 e.printStackTrace(); 
+		}
+	}
+    
     public void keyReleased(KeyEvent e) {
         int tecla = e.getKeyCode();
         if (tecla == KeyEvent.VK_A || tecla == KeyEvent.VK_RIGHT || tecla == KeyEvent.VK_D || tecla == KeyEvent.VK_LEFT) {
@@ -850,9 +789,5 @@ public class TableroGalaga extends JPanel implements KeyListener {
     }
 
     public void keyTyped(KeyEvent e) {
-    }
-    public int getNivel()
-    {
-    	return nivel;
     }
 }

@@ -12,10 +12,11 @@ public class Enemigos {
     private final int height = 32;
     private boolean visible = true;
 
-   // gracias chatty por explicarme como usar static
+    // Textura compartida entre todos los enemigos
     private static BufferedImage texturaEnemigos;
-    private static BufferedImage texturaEnemigosIndex;
 
+    // Textura individual para cada enemigo, puede ser null
+    private BufferedImage texturaIndividual;
 
     public Enemigos(int x, int y, double velocidad) {
         this.x = x;
@@ -23,24 +24,24 @@ public class Enemigos {
         this.dx = velocidad;
     }
 
-    // para que la textura no se multiplique y se quede fija en el rectangulo de la hitbox
+    // Asigna la textura compartida para todos los enemigos
     public static void aplicarTexturaEnemigos(BufferedImage textura) {
         texturaEnemigos = textura;
     }
-    
-    public static void aplicarTexturaEnemigosIndex(BufferedImage textura) {
-        texturaEnemigosIndex = textura;
+
+    // Asigna una textura individual a este enemigo
+    public void aplicarTexturaIndividual(BufferedImage textura) {
+        this.texturaIndividual = textura;
     }
 
     public Rectangle2D getEnemigo() {
         return new Rectangle2D.Double(x, y, width, height);
     }
 
-    public void mover(boolean direccionderecha) {
-        if (direccionderecha) {
+    public void mover(boolean direccionDerecha) {
+        if (direccionDerecha) {
             x = x + dx;
-        } 
-        else {
+        } else {
             x = x - dx;
         }
     }
@@ -50,23 +51,20 @@ public class Enemigos {
     }
 
     public void dibujar(Graphics2D g) {
-        if (visible && texturaEnemigos != null) {
+        if (visible) {
             Rectangle2D rect = new Rectangle2D.Double(x, y, width, height);
-            TexturePaint paint = new TexturePaint(texturaEnemigos, rect);
-            g.setPaint(paint);
-            g.fill(rect);
+
+            // Usar la textura individual si está asignada, de lo contrario usar la textura compartida
+            BufferedImage textura = (texturaIndividual != null) ? texturaIndividual : texturaEnemigos;
+
+            if (textura != null) {
+                TexturePaint paint = new TexturePaint(textura, rect);
+                g.setPaint(paint);
+                g.fill(rect);
+            }
         }
     }
 
-    public void dibujarIndex(Graphics2D g) {
-    	if(visible && texturaEnemigosIndex != null) {
-    		Rectangle2D rect = new Rectangle2D.Double(x, y, width, height);
-            TexturePaint paint = new TexturePaint(texturaEnemigosIndex, rect);
-            g.setPaint(paint);
-            g.fill(rect);
-    	}
-    }
-    
     public void Visibilizar(boolean visible) {
         this.visible = visible;
     }
@@ -86,6 +84,7 @@ public class Enemigos {
     public int getWidth() {
         return width;
     }
+
     public int getHeight() {
         return height;
     }
