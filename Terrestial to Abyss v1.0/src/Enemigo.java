@@ -33,68 +33,72 @@ public class Enemigo {
 
     public void actualizar(List<Bloque> bloques, List<Killblock> list, Jugador jugador) {
         if (!eliminado) {
-            velocidadY += 1.0f;  
+            float distancia = distanciaConJugador(jugador); 
 
-            if (tipoEnemigo.equals("slime")) {
-                duracionFrame = 200;
-                if (salto && frameActual == 2) {
-                    velocidadY -= 8f;
-                    y += velocidadY;
-                    salto = false;
-                } else {
-                    velocidadY += 8f;
-                    y += velocidadY;
-                    if (frameActual == 1) {
-                        x += velocidadX;
+      
+            if (distancia < 800) {
+                velocidadY += 1.0f;  
+
+                if (tipoEnemigo.equals("slime")) {
+                    duracionFrame = 200;
+                    if (salto && frameActual == 2) {
+                        velocidadY -= 8f;
+                        y += velocidadY;
+                        salto = false;
+                    } else {
+                        velocidadY += 8f;
+                        y += velocidadY;
+                        if (frameActual == 1) {
+                            x += velocidadX;
+                        }
+                        salto = true;
                     }
-                    salto = true;
-                }
 
-            } else if (tipoEnemigo.equals("skull")) {
-                duracionFrame = 300;
-                
-                x += velocidadX; 
-                manejarColisiones(bloques, true); 
-                
-                if (salto && frameActual == 1) {
-                    velocidadY -= 8f;  
-                    y += velocidadY;
-                    salto = false;
-                }
-                else if(salto && frameActual == 2)
-                    {
+                } else if (tipoEnemigo.equals("skull")) {
+                    duracionFrame = 300;
+                    
+                    x += velocidadX; 
+                    manejarColisiones(bloques, true); 
+                    
+                    if (salto && frameActual == 1) {
+                        velocidadY -= 8f;  
+                        y += velocidadY;
+                        salto = false;
+                    }
+                    else if (salto && frameActual == 2) {
                         velocidadY += 2f;  
                         y += velocidadY;
                         salto = false;
                     }
-                 else {
-                    velocidadY += 8f;  
-                    y += velocidadY;
-                    salto = true;
-                }
+                    else {
+                        velocidadY += 8f;  
+                        y += velocidadY;
+                        salto = true;
+                    }
 
-            } else if (tipoEnemigo.equals("mimic")) {
-                duracionFrame = 300;
+                } else if (tipoEnemigo.equals("mimic")) {
+                    duracionFrame = 300;
 
-                if (distanciaConJugador(jugador) < 200) {  
-                    animacionActiva = true;
-                    x += velocidadX;
-                    manejarColisiones(bloques, true);
+                    if (distancia < 200) {  
+                        animacionActiva = true;
+                        x += velocidadX;
+                        manejarColisiones(bloques, true);
+                    } else {
+                        animacionActiva = false;  
+                    }
                 } else {
-                    animacionActiva = false;  
+                    x += velocidadX;
+                    manejarColisiones(bloques, true); 
                 }
-            }else {
-                
-                x += velocidadX;
-                manejarColisiones(bloques, true); 
-            }
 
-            y += velocidadY;
-            manejarColisiones(bloques, false);  
-            verificarKillBlocks(list);    
-            actualizarAnimacion();              
+                y += velocidadY;
+                manejarColisiones(bloques, false);  
+                verificarKillBlocks(list);    
+                actualizarAnimacion();              
+            }
         }
     }
+
 
 
     private void manejarColisiones(List<Bloque> bloques, boolean esHorizontal) {

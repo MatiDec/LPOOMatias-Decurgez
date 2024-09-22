@@ -166,7 +166,7 @@ public class Jugador {
                         randomInt = random.nextInt(7); 
                         // Posibles valores: 0,1,2;
                         //Posibilidad de 0,33 de no obtener un power up al matar un enemigo (se puede cambiar);
-                        System.out.print(randomInt);
+                    
                         
                         if(pw_up_active == false)
                         {
@@ -347,7 +347,7 @@ public class Jugador {
     public void perderVida() {
         vidas--;
         if (vidas <= 0) {
-            System.out.println("Game Over");
+           
         } else {
             niveles.reiniciarElementos();  
             

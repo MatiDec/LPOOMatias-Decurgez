@@ -52,9 +52,9 @@ public class Ventana extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         getContentPane().setLayout(new BorderLayout());
 
-        // Inicializar la cámara
+    
         camara = new Camara(0, 0, ancho, alto);
-        camara.actualizar(jugador); // Actualizar la cámara para centrarla en el jugador desde el principio
+        camara.actualizar(jugador); 
         gameOverPanel = new GameOverPanel(this);
         panelJuego = new JPanel() {
             private static final long serialVersionUID = 1L;
@@ -63,7 +63,6 @@ public class Ventana extends JFrame {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
 
-                // Dibujar fondos con efecto parallax
                 // Dibujar fondos con efecto parallax
                 power_ups();
                 dibujarFondosParallax(g);
@@ -76,7 +75,7 @@ public class Ventana extends JFrame {
         contadorVidas.setBounds(40, 10, 200, 90);
         actualizarContadorVidas();
         panelJuego.add(contadorVidas);
-        // Crear el panel del menú
+
         panelMenu = new JPanel()
         {
 			private static final long serialVersionUID = 1L;
@@ -133,7 +132,7 @@ public class Ventana extends JFrame {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 ImageIcon victoryImage = new ImageIcon(getClass().getResource("/Texturas/WINSCREEN.PNG"));
-                g.drawImage(victoryImage.getImage(), 0, 0, ancho-16, alto-38, this); // Eleva la imagen 20 píxeles
+                g.drawImage(victoryImage.getImage(), 0, 0, ancho-16, alto-38, this); 
             }
 
         };
@@ -141,19 +140,19 @@ public class Ventana extends JFrame {
         panelVictoria.setVisible(false);
         getContentPane().add(panelVictoria, BorderLayout.CENTER);
 
-        timerVictoria = new Timer(1000, e -> volverAlMenu());
+        timerVictoria = new Timer(15000, e -> volverAlMenu());
         timerVictoria.setRepeats(false);
-     // Cargar la imagen para el botón exit
+    
         ImageIcon exitImagen = new ImageIcon(getClass().getResource("/Texturas/exitbutton.png"));
 
-	    // Escalar la imagen si es necesario
+	
 	    imagenEscalada = exitImagen.getImage().getScaledInstance(170, 50, Image.SCALE_SMOOTH);
 	
-	    // Crear el botón sin texto y con la imagen escalada
+
 	    JButton botonExit = new JButton(new ImageIcon(imagenEscalada));
 	    botonExit.setBounds(570, 500, 170, 50);
 	    
-	    // Eliminar el borde y el fondo para hacer que el botón parezca solo la imagen
+	
 	    botonExit.setBorderPainted(false);
 	    botonExit.setContentAreaFilled(false);
 	    botonExit.setFocusPainted(false);
@@ -202,14 +201,14 @@ public class Ventana extends JFrame {
         
         
         panelJuego.addKeyListener(jugador.getControladorTeclado());
-        // Agregar KeyListener para manejar la tecla Escape
+
         panelJuego.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 if (evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
                     if (enPausa) {
-                        reanudarJuego(); // Reanudar el juego si está pausado
+                        reanudarJuego(); 
                     } else {
-                        pausarJuego(); // Pausar el juego
+                        pausarJuego(); 
                     }
                 }
             }
@@ -217,10 +216,10 @@ public class Ventana extends JFrame {
 
         panelJuego.addKeyListener(jugador.getControladorTeclado());
 
-//        add(panelJuego, BorderLayout.CENTER);
+
         addKeyListener(jugador.getControladorTeclado());
         
-        // Timer del menú para el efecto parallax
+
         timer2 = new Timer(16, e -> actualizarParallax());
         timer2.start();
         
@@ -236,25 +235,27 @@ public class Ventana extends JFrame {
             actualizarParallax();            
             nivel.actualizarEstalactitasYPiedras(jugador);
             if (nivel.nivelactual != nivelAnterior) {
-                // Lógica para manejar el cambio de nivel
-                cargarFondos(); // Cargar fondos según el nuevo nivel
-                nivelAnterior = nivel.nivelactual; // Actualizar el nivel anterior
+               
+                cargarFondos(); 
+                nivelAnterior = nivel.nivelactual; 
             }
             
             Boss boss = nivel.getBoss();
             if (boss != null) {
                 boss.actualizar(nivel.getBloques(), nivel.getKillBlocks(), nivel.getEnemigos(), jugador);
                 
-                // Verificar si la vida del boss es 0
+
                 if (boss.getVida() <= 0) { 
                     timer.stop(); 
+                    nivel.detenerAudio();
+                    nivel.reproducirAudioUnaVez("NIVEL 5_FINAL.wav");
                     panelVictoria.setVisible(true); 
                     panelJuego.setVisible(false); 
                     getContentPane().add(panelVictoria, BorderLayout.CENTER); 
                     revalidate();
                     repaint();
                     
-                    timerVictoria.start(); // Iniciar el timer para volver al menú después de 10 segundos
+                    timerVictoria.start(); 
                 }
             }
             actualizarContadorVidas();
@@ -293,9 +294,9 @@ public class Ventana extends JFrame {
         panelVictoria.setVisible(false);
         timer2.stop();
 
-        
         nivel.nivelactual = 1;
         jugador.reiniciar(); 
+        nivel.cambiarNivel("level-1.txt"); 
         jugador.x = nivel.getSpawnBlock().x * 32; 
         jugador.y = nivel.getSpawnBlock().y * 32;
         cargarFondos();
@@ -305,6 +306,7 @@ public class Ventana extends JFrame {
             getContentPane().remove(panelJuego);
         }
         getContentPane().add(panelJuego, BorderLayout.CENTER);
+        panelJuego.setVisible(true);
         revalidate();
         repaint();
 
@@ -322,22 +324,22 @@ public class Ventana extends JFrame {
         getContentPane().add(panelMenu, BorderLayout.CENTER); 
         revalidate();
         repaint();
-        nivel.nivelactual = 1; 
-        nivel.boss = null; 
+        nivel.nivelactual = 0; 
+        cargarFondos(); 
         timer2.start();
     }
-
 
 
     
     private void cargarFondos() {
     	
         try {
-        	if(panelMenu.isVisible())
-        	{
-        		background1 = ImageIO.read(getClass().getResource("/Texturas/n5fondo1.png"));
- 	            background2 = ImageIO.read(getClass().getResource("/Texturas/n5fondo3.png"));
- 	            background3 = ImageIO.read(getClass().getResource("/Texturas/n4fondo5.png"));
+        	if (nivel.nivelactual == 0 || panelMenu.isVisible()) {
+                background1 = ImageIO.read(getClass().getResource("/Texturas/n5fondo1.png"));
+                background2 = ImageIO.read(getClass().getResource("/Texturas/n5fondo3.png"));
+                background3 = ImageIO.read(getClass().getResource("/Texturas/n4fondo5.png"));
+                background4 = null; 
+                background5 = null;
         	}
         	
         	if(nivel.nivelactual == 1)
@@ -350,7 +352,7 @@ public class Ventana extends JFrame {
 	            background5 = ImageIO.read(getClass().getResource("/Texturas/n1fondo5.png"));
         	}
         
-        	if(nivel.nivelactual == 2) // ACA DUPLICA LOS IF (YO CAMBIO VALORES) Y PONE LA MUSICA QUE VA
+        	if(nivel.nivelactual == 2) 
         	{
 
 	            background1 = ImageIO.read(getClass().getResource("/Texturas/n2fondo1.png"));
@@ -360,7 +362,7 @@ public class Ventana extends JFrame {
 	            background5 = ImageIO.read(getClass().getResource("/Texturas/n2fondo5.png"));
         	}
         	
-        	if(nivel.nivelactual == 3) // ACA DUPLICA LOS IF (YO CAMBIO VALORES) Y PONE LA MUSICA QUE VA
+        	if(nivel.nivelactual == 3) 
         	{
 
 	            background1 = ImageIO.read(getClass().getResource("/Texturas/n3fondo1.png"));
@@ -370,7 +372,7 @@ public class Ventana extends JFrame {
 	            background5 = ImageIO.read(getClass().getResource("/Texturas/n3fondo5.png"));
         	}
         	
-        	if(nivel.nivelactual == 4) // ACA DUPLICA LOS IF (YO CAMBIO VALORES) Y PONE LA MUSICA QUE VA
+        	if(nivel.nivelactual == 4) 
         	{
 
 	            background1 = ImageIO.read(getClass().getResource("/Texturas/n4fondo1.png"));
@@ -380,7 +382,7 @@ public class Ventana extends JFrame {
 	            background5 = ImageIO.read(getClass().getResource("/Texturas/n4fondo5.png"));
         	}
         	
-        	if(nivel.nivelactual == 5) // ACA DUPLICA LOS IF (YO CAMBIO VALORES) Y PONE LA MUSICA QUE VA
+        	if(nivel.nivelactual == 5) 
         	{
 
 	            background1 = ImageIO.read(getClass().getResource("/Texturas/n5fondo1.png"));
@@ -407,7 +409,7 @@ public class Ventana extends JFrame {
     
 
     
-    private void power_ups() // verificacion de los power ups para mostrar el icono del efecto
+    private void power_ups() 
     {
     	if(jugador.supersalto == true)
     	{

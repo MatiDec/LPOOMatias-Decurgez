@@ -92,15 +92,15 @@ public class panelPause extends JPanel
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 if (evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
                     if (!ventana.enPausa) {
-                        ventana.pausarJuego(); // Reanudar el juego si está pausado
+                        ventana.pausarJuego(); 
                     } else {
-                        ventana.reanudarJuego(); // Pausar el juego
+                        ventana.reanudarJuego(); 
                     }
                 }
             }
         });
         
-        setFocusable(true); // Asegúrate de que el panel pueda recibir el foco		
+        setFocusable(true); 
 
     }
 }

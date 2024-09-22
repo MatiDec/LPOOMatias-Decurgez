@@ -9980,3 +9980,5 @@
 162,24,spawnenemigomimic.png
 244,35,piedralisa-var1.png
 244,31,piedralisa-var1.png
+244,34,area-victoria.png
+244,32,area-victoria.png

@@ -37,8 +37,9 @@ public class Niveles {
     private List<Enemigo> enemigos = new ArrayList<>();
     private Map<String, ImageIcon> texturas;
     private List<String> texturasSinColision;
-    public int nivelactual = 1;
+    public int nivelactual = 5;
     public Boss boss;
+    private boolean cambiodemusica = false;
     private List<Bloque> estalactitasOriginales = new ArrayList<>();
     private List<Bloque> piedrasCircularesOriginales = new ArrayList<>();
     private List<Enemigo> enemigosOriginales = new ArrayList<>();
@@ -50,7 +51,7 @@ public class Niveles {
     
     
     public Niveles(String nombreArchivo) {
-        texturasSinColision = List.of("lava-top.png", "troncoarbol-var1.png", "troncoarbol-var2.png", "troncoarbol-var3.png", "hojas-lados.png", "hojas-relleno.png", "cartel-sup.png", "cartel-inf.png", "concreto-var1.png", "concreto-var2.png", "concreto-var3.png", "cristal-cueva-var1.png", "cristal-cueva-var2.png", "cristal-cueva-var3.png", "cumulopolvo-var1.png", "cumulopolvo-var2.png", "cumulopolvo-var3.png", "enredadera-var1.png", "enredadera-var2.png", "hojas-lados.png", "hojas-relleno.png", "hongo-var1.png", "hongo-var2.png", "hongo-var3.png", "palo.png", "palopodrido.png", "papel-roto-var1.png", "papel-roto-var2.png", "papel-roto-var3.png", "piedrarota-var1.png", "piedrarota-var2.png", "piedrarota-var3.png", "puerta-rota.png", "rail.png", "troncoarbol-var1.png", "troncoarbol-var2.png", "troncoarbol-var3.png", "troncocortado-var1.png", "troncocortado-var2.png", "troncoenredadera-var1.png", "troncoenredadera-var2.png", "troncoraiz.png", "viga-var1.png", "viga-var2.png" );
+        texturasSinColision = List.of("track1.,png","lava-top.png", "troncoarbol-var1.png", "troncoarbol-var2.png", "troncoarbol-var3.png", "hojas-lados.png", "hojas-relleno.png", "cartel-sup.png", "cartel-inf.png", "concreto-var1.png", "concreto-var2.png", "concreto-var3.png", "cristal-cueva-var1.png", "cristal-cueva-var2.png", "cristal-cueva-var3.png", "cumulopolvo-var1.png", "cumulopolvo-var2.png", "cumulopolvo-var3.png", "enredadera-var1.png", "enredadera-var2.png", "enredadera-var3.png", "hojas-lados.png", "hojas-relleno.png", "hongo-var1.png", "hongo-var2.png", "hongo-var3.png", "palo.png", "palopodrido.png", "papel-roto-var1.png", "papel-roto-var2.png", "papel-roto-var3.png", "piedrarota-var1.png", "piedrarota-var2.png", "piedrarota-var3.png", "puerta-rota.png", "rail.png", "troncoarbol-var1.png", "troncoarbol-var2.png", "troncoarbol-var3.png", "troncocortado-var1.png", "troncocortado-var2.png", "troncoenredadera-var1.png", "troncoenredadera-var2.png", "troncoraiz.png", "viga-var1.png", "viga-var2.png" );
         texturas = cargarTexturas("src/Texturas");
         cargarNivel(nombreArchivo);
         guardarPosicionesOriginales();
@@ -67,7 +68,7 @@ public class Niveles {
         piedrasCirculares.clear();
         enemigos.clear();
         lavaBloques.clear();
-        System.out.println("Cambiando de nivel...");
+        areasVictoria.clear();
         cargarNivel(nuevoNombreArchivo);
         guardarPosicionesOriginales();
         spawnBlock = getSpawnBlock();
@@ -142,7 +143,6 @@ public class Niveles {
                             
                             Lava lava = new Lava(x, y, textura);
                             lavaBloques.add(lava);
-                        
                     } else {
                         if (texturasSinColision.contains(textura)) {
                             bloquesSinColision.add(bloque);
@@ -195,14 +195,17 @@ public class Niveles {
             enemigos.add(enemigo);
         }
     }
+    
 
+
+    
     public void actualizarEstalactitasYPiedras(Jugador jugador) {
         List<Bloque> estalactitasParaEliminar = new ArrayList<>();
         List<Bloque> piedrasParaEliminar = new ArrayList<>();
-        
+
 
         for (Bloque estalactita : estalactitas) {
-            if (Math.abs(jugador.getX() / 32.0f - estalactita.x) <= 9) {
+            if (Math.abs(jugador.getX() / 32.0f - estalactita.x) <= 5) {
                 estalactita.y += 0.3f;
                 Rectangle2D.Float estalactitaRect = new Rectangle2D.Float(estalactita.x * 32, estalactita.y * 32, 32, 32);
                 boolean colisionada = false;
@@ -230,7 +233,20 @@ public class Niveles {
         }
 
 
+        if (spawnBlock != null) {
+            float distancia = (float) Math.sqrt(
+                Math.pow(jugador.getX() - (spawnBlock.x * 32), 2) + 
+                Math.pow(jugador.getY() - (spawnBlock.y * 32), 2)
+            );
 
+            if (distancia >= 120 * 32 && cambiodemusica == false && nivelactual == 5) {
+            	detenerAudio();
+            	reproducirAudioilimitado("/Sonidos/NIVEL 5_COMBATE.wav");
+                cambiodemusica = true;
+            }
+ 
+        }
+    
         
         for (Lava lava : lavaBloques) {
         	Rectangle2D.Float jugadorRect = new Rectangle2D.Float(jugador.getX(), jugador.getY(), jugador.getAncho(), jugador.getAlto());
@@ -296,7 +312,7 @@ public class Niveles {
                 }
             }
 
-            if (Math.abs(jugador.getX() / 32.0f - piedra.x) <= 16) {
+            if (Math.abs(jugador.getX() / 32.0f - piedra.x) <= 12) {
                 if (puedeCaer) {
                     piedra.y += 0.2f;
                 } else {
@@ -336,7 +352,11 @@ public class Niveles {
 
         estalactitas.removeAll(estalactitasParaEliminar);
         piedrasCirculares.removeAll(piedrasParaEliminar);
+        
+       
 
+
+        
         List<Bloque> areasAEliminar = new ArrayList<>();
         for (Bloque area : areasVictoria) {
             Rectangle2D.Float bloqueRect = new Rectangle2D.Float(area.x * 32, area.y * 32, 32, 32);
@@ -344,7 +364,7 @@ public class Niveles {
             if (bloqueRect.intersects(jugadorRect)) {
                 reiniciarElementos();
                 if (nivelactual == 1) {
-                    cambiarNivel("level-3.txt");
+                    cambiarNivel("level-2.txt");
                     detenerAudio();
 
                     if (spawnBlock != null) {
@@ -354,7 +374,7 @@ public class Niveles {
                         jugador.x = 50;
                         jugador.y = 50;
                     }
-                    reproducirAudioilimitado("/Sonidos/NIVEL 2.wav"); // nivel 2
+                    reproducirAudioilimitado("/Sonidos/NIVEL 2.wav");
                     nivelactual++;
                 } else if (nivelactual == 2) {
                     cambiarNivel("level-3.txt"); 
@@ -366,7 +386,7 @@ public class Niveles {
                         jugador.x = 50;
                         jugador.y = 50;
                     }
-                    reproducirAudioilimitado("/Sonidos/NIVEL 3.wav"); // nivel 1
+                    reproducirAudioilimitado("/Sonidos/NIVEL 3.wav"); 
                     nivelactual++;
                 }
                 else if (nivelactual == 3) {
@@ -379,20 +399,20 @@ public class Niveles {
                     } else {
                         jugador.x = 50;
                         jugador.y = 50;
-                    }// nivel 1
+                    }
                     nivelactual++;
                 }
                 else if (nivelactual == 4) {
                     cambiarNivel("level-5.txt"); 
                     detenerAudio();
-                    reproducirAudioilimitado("/Sonidos/NIVEL 5.wav");
+                    reproducirAudioilimitado("/Sonidos/NIVEL 5_INICIO.wav");
                     if (spawnBlock != null) {
                         jugador.x = (float) spawnBlock.getX() * 32;
                         jugador.y = (float) spawnBlock.getY() * 32;
                     } else {
                         jugador.x = 50;
                         jugador.y = 50;
-                    }// nivel 1
+                    }
                     nivelactual++;
                 }
                 areasAEliminar.add(area); 
@@ -420,7 +440,7 @@ public class Niveles {
 
 
         if (boss != null) {
-            boss.dibujar(g, camara, texturas);
+            boss.dibujar(g, camara);
         }
 
         for (Bloque spike : spikes)
@@ -517,7 +537,7 @@ public class Niveles {
         }
     }
     
-    private void reproducirAudioUnaVez(String nombreArchivo) {
+    public void reproducirAudioUnaVez(String nombreArchivo) {
         AudioInputStream audioInputStream = null;
         try {
             // CARGA EL AUDIO

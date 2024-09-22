@@ -8355,7 +8355,7 @@
 221,37,enredadera-var3.png
 226,38,enredadera-var1.png
 221,38,enredadera-var1.png
-26,34,cesped-var2.png
+26,34,cesped-var1.png
 25,34,cesped-var2.png
 24,34,cesped-var2.png
 23,34,cesped-var2.png
@@ -8384,3 +8384,8 @@
 0,20,cesped-var2.png
 242,39,tierra-var2.png
 243,39,tierra-var2.png
+242,42,area-victoria.png
+242,41,area-victoria.png
+243,42,area-victoria.png
+243,41,area-victoria.png
+243,40,area-victoria.png
